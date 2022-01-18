@@ -22,9 +22,36 @@ import org.sireum._
 
 val SCRIPT_HOME: Os.Path = Os.slashDir
 val PATH_SEP: String = Os.pathSep
+val srcDir: Os.Path = SCRIPT_HOME.up / "src"
+
+val processes: ISZ[ISZ[String]] = ISZ(
+  ISZ("tsp"),
+  ISZ("tcp"),
+  ISZ("fp")
+)
+
+var modules: ISZ[Os.Path] = ISZ(
+  srcDir / "common" / "data" / "main",
+  srcDir / "common" / "library" / "main",
+  srcDir / "infrastructure" / "architecture" / "main",
+  srcDir / "infrastructure" / "art" / "shared" / "src" / "main",
+  srcDir / "infrastructure" / "seL4Nix" / "main"
+)
+
+for(p <- processes) {
+  modules = modules :+ ((srcDir / "components") /+ p / "shared" / "main")
+  modules = modules :+ ((srcDir / "infrastructure" / "apis") /+ p / "main")
+  modules = modules :+ ((srcDir / "infrastructure" / "bridges") /+ p / "main")
+}
+
+for(m <- modules) {
+  assert(m.exists, s"${m} doesn't exist")
+}
+
+val sources = st"${(modules.map((m: Os.Path) => m.string), Os.pathSep)}".render
 
 val TempSensor_i_tsp_tempSensor: ISZ[String] = ISZ(
-  "--sourcepath", s"${SCRIPT_HOME}/../src/main/bridge${PATH_SEP}${SCRIPT_HOME}/../src/main/component${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/TemperatureControl${PATH_SEP}${SCRIPT_HOME}/../src/main/art${PATH_SEP}${SCRIPT_HOME}/../src/main/data${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/TempSensor_i_tsp_tempSensor",
+  "--sourcepath", sources,
   "--output-dir", s"${SCRIPT_HOME}/../../camkes/slang_libraries/TempSensor_i_tsp_tempSensor",
   "--name", "TempSensor_i_tsp_tempSensor",
   "--apps", "t.TempSensor_i_tsp_tempSensor.tempSensor",
@@ -38,13 +65,12 @@ val TempSensor_i_tsp_tempSensor: ISZ[String] = ISZ(
   "--forward", "art.ArtNative=t.TempSensor_i_tsp_tempSensor.tempSensor",
   "--stack-size", "110592",
   "--stable-type-id",
-  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_api.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_api.c${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_adapter.c",
-  "--exclude-build", "t.TemperatureControl.TempSensor_i_tsp_tempSensor,t.TemperatureControl.TempControl_i_tcp_tempControl,t.TemperatureControl.Fan_i_fp_fan",
+  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempSensor_i_tsp_tempSensor/TempSensor_i_tsp_tempSensor_adapter.c",
   "--lib-only",
   "--verbose")
 
 val TempControl_i_tcp_tempControl: ISZ[String] = ISZ(
-  "--sourcepath", s"${SCRIPT_HOME}/../src/main/bridge${PATH_SEP}${SCRIPT_HOME}/../src/main/component${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/TemperatureControl${PATH_SEP}${SCRIPT_HOME}/../src/main/art${PATH_SEP}${SCRIPT_HOME}/../src/main/data${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/TempControl_i_tcp_tempControl",
+  "--sourcepath", sources,
   "--output-dir", s"${SCRIPT_HOME}/../../camkes/slang_libraries/TempControl_i_tcp_tempControl",
   "--name", "TempControl_i_tcp_tempControl",
   "--apps", "t.TempControl_i_tcp_tempControl.tempControl",
@@ -58,13 +84,12 @@ val TempControl_i_tcp_tempControl: ISZ[String] = ISZ(
   "--forward", "art.ArtNative=t.TempControl_i_tcp_tempControl.tempControl",
   "--stack-size", "110592",
   "--stable-type-id",
-  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_api.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_api.c${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_adapter.c",
-  "--exclude-build", "t.TemperatureControl.TempSensor_i_tsp_tempSensor,t.TemperatureControl.TempControl_i_tcp_tempControl,t.TemperatureControl.Fan_i_fp_fan",
+  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/TempControl_i_tcp_tempControl/TempControl_i_tcp_tempControl_adapter.c",
   "--lib-only",
   "--verbose")
 
 val Fan_i_fp_fan: ISZ[String] = ISZ(
-  "--sourcepath", s"${SCRIPT_HOME}/../src/main/bridge${PATH_SEP}${SCRIPT_HOME}/../src/main/component${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/TemperatureControl${PATH_SEP}${SCRIPT_HOME}/../src/main/art${PATH_SEP}${SCRIPT_HOME}/../src/main/data${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/Fan_i_fp_fan",
+  "--sourcepath", sources,
   "--output-dir", s"${SCRIPT_HOME}/../../camkes/slang_libraries/Fan_i_fp_fan",
   "--name", "Fan_i_fp_fan",
   "--apps", "t.Fan_i_fp_fan.fan",
@@ -78,13 +103,12 @@ val Fan_i_fp_fan: ISZ[String] = ISZ(
   "--forward", "art.ArtNative=t.Fan_i_fp_fan.fan",
   "--stack-size", "110592",
   "--stable-type-id",
-  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/Fan_i_fp_fan/Fan_i_fp_fan.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/Fan_i_fp_fan/Fan_i_fp_fan.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/Fan_i_fp_fan/Fan_i_fp_fan_api.h${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/Fan_i_fp_fan/Fan_i_fp_fan_api.c${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/Fan_i_fp_fan/Fan_i_fp_fan_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/Fan_i_fp_fan/Fan_i_fp_fan_adapter.c",
-  "--exclude-build", "t.TemperatureControl.TempSensor_i_tsp_tempSensor,t.TemperatureControl.TempControl_i_tcp_tempControl,t.TemperatureControl.Fan_i_fp_fan",
+  "--exts", s"${SCRIPT_HOME}/../../c/ext-c/ext.c${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c/ext.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/Fan_i_fp_fan/Fan_i_fp_fan_adapter.h${PATH_SEP}${SCRIPT_HOME}/../../c/etc_seL4/adapters/Fan_i_fp_fan/Fan_i_fp_fan_adapter.c",
   "--lib-only",
   "--verbose")
 
 val SlangTypeLibrary: ISZ[String] = ISZ(
-  "--sourcepath", s"${SCRIPT_HOME}/../src/main/art${PATH_SEP}${SCRIPT_HOME}/../src/main/data${PATH_SEP}${SCRIPT_HOME}/../src/main/seL4Nix/t/SlangTypeLibrary",
+  "--sourcepath", sources,
   "--output-dir", s"${SCRIPT_HOME}/../../camkes/slang_libraries/SlangTypeLibrary",
   "--name", "SlangTypeLibrary",
   "--apps", "t.SlangTypeLibrary.SlangTypeLibrary",

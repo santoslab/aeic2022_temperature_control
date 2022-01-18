@@ -22,6 +22,36 @@ import org.sireum._
 
 val SCRIPT_HOME: Os.Path = Os.slashDir
 val PATH_SEP: String = Os.pathSep
+val srcDir: Os.Path = SCRIPT_HOME.up / "src"
+
+val processes: ISZ[ISZ[String]] = ISZ(
+  ISZ("tsp"),
+  ISZ("tcp"),
+  ISZ("fp")
+)
+
+var modules: ISZ[Os.Path] = ISZ(
+  srcDir / "common" / "data" / "main",
+  srcDir / "common" / "library" / "main",
+  srcDir / "infrastructure" / "architecture" / "main",
+  srcDir / "infrastructure" / "art" / "shared" / "src" / "main",
+  srcDir / "infrastructure" / "nix" / "main",
+  srcDir / "infrastructure" / "schedulers" / "main",
+  srcDir / "app" / "shared" / "src" / "main" / "scala",
+  srcDir / "app" / "jvm" / "src" / "main" / "scala"
+)
+
+for(p <- processes) {
+  modules = modules :+ ((srcDir / "components") /+ p / "shared" / "main")
+  modules = modules :+ ((srcDir / "infrastructure" / "apis") /+ p / "main")
+  modules = modules :+ ((srcDir / "infrastructure" / "bridges") /+ p / "main")
+}
+
+for(m <- modules) {
+  assert(m.exists, s"${m} doesn't exist")
+}
+
+val sources = st"${(modules.map((m: Os.Path) => m.string), Os.pathSep)}".render
 
 var project: ISZ[String] = Cli(Os.pathSepChar).parseTranspile(Os.cliArgs, 0) match {
   case Some(o: Cli.TranspileOption) =>
@@ -29,7 +59,7 @@ var project: ISZ[String] = Cli(Os.pathSepChar).parseTranspile(Os.cliArgs, 0) mat
       println("Using Legacy Scheduler")
 
       val main: ISZ[String] = ISZ(
-        "--sourcepath", s"${SCRIPT_HOME}/../src/main",
+        "--sourcepath", sources,
         "--output-dir", s"${SCRIPT_HOME}/../../c/nix",
         "--name", "main",
         "--apps", "t.TempSensor_i_tsp_tempSensor_App,t.TempControl_i_tcp_tempControl_App,t.Fan_i_fp_fan_App,t.LegacyDemo",
@@ -43,12 +73,11 @@ var project: ISZ[String] = Cli(Os.pathSepChar).parseTranspile(Os.cliArgs, 0) mat
         "--stack-size", "110592",
         "--stable-type-id",
         "--exts", s"${SCRIPT_HOME}/../../c/ext-c${PATH_SEP}${SCRIPT_HOME}/../../c/etc",
-        "--exclude-build", "t.TemperatureControl.TempSensor_i_tsp_tempSensor,t.TemperatureControl.TempControl_i_tcp_tempControl,t.TemperatureControl.Fan_i_fp_fan",
         "--verbose")
       main
     } else {
       val main: ISZ[String] = ISZ(
-        "--sourcepath", s"${SCRIPT_HOME}/../src/main",
+        "--sourcepath", sources,
         "--output-dir", s"${SCRIPT_HOME}/../../c/nix",
         "--name", "main",
         "--apps", "t.Demo",
@@ -62,7 +91,6 @@ var project: ISZ[String] = Cli(Os.pathSepChar).parseTranspile(Os.cliArgs, 0) mat
         "--stack-size", "110592",
         "--stable-type-id",
         "--exts", s"${SCRIPT_HOME}/../../c/ext-schedule${PATH_SEP}${SCRIPT_HOME}/../../c/ext-c${PATH_SEP}${SCRIPT_HOME}/../../c/etc",
-        "--exclude-build", "t.TemperatureControl.TempSensor_i_tsp_tempSensor,t.TemperatureControl.TempControl_i_tcp_tempControl,t.TemperatureControl.Fan_i_fp_fan",
         "--verbose")
       main
     }
