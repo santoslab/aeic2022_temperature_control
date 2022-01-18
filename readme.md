@@ -1,137 +1,106 @@
-# temperature-control
+# Temperature Control with seL4 Domain Scheduling
+
+ Table of Contents
+  * [Diagrams](#diagrams)
+    * [AADL Arch](#aadl-arch)
+    * [SeL4](#sel4)
+      * [SeL4 CAmkES Arch](#sel4-camkes-arch)
+      * [SeL4 CAmkES HAMR Arch](#sel4-camkes-hamr-arch)
+  * [Metrics](#metrics)
+    * [AADL Metrics](#aadl-metrics)
+    * [Linux Metrics](#linux-metrics)
+    * [SeL4 Metrics](#sel4-metrics)
+  * [Run Instructions](#run-instructions)
+    * [Linux](#linux)
+    * [SeL4](#sel4)
 
 ## Diagrams
-
 ### AADL Arch
-![Aadl_Arch](aadl/diagrams/aadl-arch.svg)
+![AADL Arch](aadl/diagrams/aadl-arch.svg)
 
-## seL4 Arch
+### SeL4
+#### SeL4 CAmkES Arch
 ![SeL4 CAmkES Arch](aadl/diagrams/CAmkES-arch-SeL4.svg)
 
+#### SeL4 CAmkES HAMR Arch
+![SeL4 CAmkES HAMR Arch](aadl/diagrams/CAmkES-HAMR-arch-SeL4.svg)
+
+## Metrics
+### AADL Metrics
+| | |
+|--|--|
+|Threads|3|
+|Ports|9|
+|Connections|4|
+
+### Linux Metrics
+Directories Scanned Using [https://github.com/AlDanial/cloc](https://github.com/AlDanial/cloc) v1.88:
+- [hamr/c/ext-c](hamr/c/ext-c)
+- [hamr/c/nix](hamr/c/nix)
+
+<u><b>Total LOC</b></u>
+
+Total number of HAMR-generated (transpiled) and developer-written lines of code
+
+Language|files|blank|comment|code
+:-------|-------:|-------:|-------:|-------:
+C|194|2176|281|12387
+C/C++ Header|373|3280|324|8849
+C++|1|113|52|498
+--------|--------|--------|--------|--------
+SUM:|568|5569|657|21734
+
+<u><b>User LOC</b></u>
+
+The number of lines of code written by the developer.
+The Slang-based component implementations were excluded by the transpiler so this represents the number of lines of C code needed to realize the component behaviors.
+"Log" are lines of code used for logging that
+likely would be excluded in a release build
+|Type|code |
+|--|--:|
+|Behavior|74|
+|Log|45|
+|--------|--------|
+|SUM:|119|
+
+### SeL4 Metrics
+Not counting CAmkES/seL4 code.  Notable is that the developer did not have to write any additional LOC for this profile.
+
 ## Run Instructions
-
+*NOTE:* actual output may differ due to issues related to thread interleaving
 ### Linux
-```
-temperature-control/hamr/slang/bin/transpile.cmd
-temperature-control/hamr/c/bin/compile.cmd
-temperature-control/hamr/c/bin/run.sh
-temperature-control/hamr/c/bin/stop.sh
-```
 
-[Example Output](#linux-example-output)
+  |HAMR Codegen Configuration| |
+  |--|--|
+  | package-name | t |
+  | exclude-component-impl | true |
+  | bit-width | 32 |
+  | max-string-size | 256 |
+  | max-array-size | 1 |
 
-### seL4
-```
-temperature-control/hamr/slang/bin/transpile-sel4.cmd
-temperature-control/hamr/camkes/bin/run-camkes.sh -s
-```
 
-[Example Output](#sel4-example-output)
+  **How To Run**
+  ```
+  aeic2022_temperature_control/hamr/slang/bin/transpile.cmd
+  aeic2022_temperature_control/hamr/c/bin/compile.cmd
+  aeic2022_temperature_control/hamr/c/bin/run.sh
+  aeic2022_temperature_control/hamr/c/bin/stop.sh
+  ```
 
-## Example Output
 
-### Linux Example Output
-```
-Using the round robin order provided in architecture/t/Schedulers.scala. Edit method 
-  t_ScheduleProviderI_getRoundRobinOrder located in round_robin.c
-to supply your own
-Art: Registered component: TempControlSystem_i_Instance_tsp_tempSensor (periodic: 1000)
-Art: - Registered port: TempControlSystem_i_Instance_tsp_tempSensor_currentTemp (data out)
-Art: - Registered port: TempControlSystem_i_Instance_tsp_tempSensor_tempChanged (event out)
-Art: Registered component: TempControlSystem_i_Instance_tcp_tempControl (sporadic: 1)
-Art: - Registered port: TempControlSystem_i_Instance_tcp_tempControl_currentTemp (data in)
-Art: - Registered port: TempControlSystem_i_Instance_tcp_tempControl_fanAck (event in)
-Art: - Registered port: TempControlSystem_i_Instance_tcp_tempControl_setPoint (event in)
-Art: - Registered port: TempControlSystem_i_Instance_tcp_tempControl_fanCmd (event out)
-Art: - Registered port: TempControlSystem_i_Instance_tcp_tempControl_tempChanged (event in)
-Art: Registered component: TempControlSystem_i_Instance_fp_fan (sporadic: 1)
-Art: - Registered port: TempControlSystem_i_Instance_fp_fan_fanCmd (event in)
-Art: - Registered port: TempControlSystem_i_Instance_fp_fan_fanAck (event out)
-Art: Connected ports: TempControlSystem_i_Instance_tsp_tempSensor_currentTemp -> TempControlSystem_i_Instance_tcp_tempControl_currentTemp
-Art: Connected ports: TempControlSystem_i_Instance_tsp_tempSensor_tempChanged -> TempControlSystem_i_Instance_tcp_tempControl_tempChanged
-Art: Connected ports: TempControlSystem_i_Instance_tcp_tempControl_fanCmd -> TempControlSystem_i_Instance_fp_fan_fanCmd
-Art: Connected ports: TempControlSystem_i_Instance_fp_fan_fanAck -> TempControlSystem_i_Instance_tcp_tempControl_fanAck
-TempControlSystem_i_Instance_tsp_tempSensor: Initialized bridge: TempControlSystem_i_Instance_tsp_tempSensor
-TempControlSystem_i_Instance_tcp_tempControl: Initialized bridge: TempControlSystem_i_Instance_tcp_tempControl
-TempControlSystem_i_Instance_fp_fan: Initialized bridge: TempControlSystem_i_Instance_fp_fan
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(84.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(84.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(104.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(104.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Sent fan command: On
-TempControlSystem_i_Instance_fp_fan: received fanCmd On
-TempControlSystem_i_Instance_fp_fan: Actuation result: Ok
-TempControlSystem_i_Instance_tcp_tempControl: received fanAck Ok
-TempControlSystem_i_Instance_tcp_tempControl: Actuation worked!
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-^CTempControlSystem_i_Instance_tsp_tempSensor: Finalized bridge: TempControlSystem_i_Instance_tsp_tempSensor
-TempControlSystem_i_Instance_tcp_tempControl: Finalized bridge: TempControlSystem_i_Instance_tcp_tempControl
-TempControlSystem_i_Instance_fp_fan: Finalized bridge: TempControlSystem_i_Instance_fp_fan
-```
+### SeL4
 
-### seL4 Example Output
-```
-Booting all finished, dropped to user space
-Entering pre-init of TempSensor_i_tsp_tempSensor
-Leaving pre-init of TempSensor_i_tsp_tempSensor
-Entering pre-init of TempControl_i_tcp_tempCEntering pre-init of Fan_i_fp_fan
-Leaving pre-initontrol
-Leaving pre-init of TempControl_i_tcp_tempControl
- of Fan_i_fp_fan
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(84.000000, Fahrenheit)
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: TemperatureTempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature)
- ok:
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(104.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(104.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Sent fan command: On
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(100.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_fp_fan: received fanCmd On
-TempControlSystem_i_Instance_fp_fan: Actuation result: Ok
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: received fanAck Ok
-TempControlSystem_i_Instance_tcp_tempControl: Actuation worked!
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(96.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(92.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-TempControlSystem_i_Instance_tsp_tempSensor: Sensed: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Received: Temperature_i(88.000000, Fahrenheit)
-TempControlSystem_i_Instance_tcp_tempControl: Temperature ok:
-```
+  |HAMR Codegen Configuration| |
+  |--|--|
+  | package-name | t |
+  | exclude-component-impl | true |
+  | bit-width | 32 |
+  | max-string-size | 256 |
+  | max-array-size | 1 |
+
+
+  **How To Run**
+  ```
+  aeic2022_temperature_control/hamr/slang/bin/transpile-sel4.cmd
+  aeic2022_temperature_control/hamr/camkes/bin/run-camkes.sh -s
+  ```

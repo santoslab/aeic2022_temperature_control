@@ -7,7 +7,7 @@ export SCRIPT_HOME=$( cd "$( dirname "$0" )" &> /dev/null && pwd )
 cd $SCRIPT_HOME
 
 # Uncomment the following to prevent terminal from closing when the app shuts down or crashes
-PREVENT_CLOSE="; bash -i"
+#PREVENT_CLOSE="; bash -i"
 
 
 OPTIONS=s:h
